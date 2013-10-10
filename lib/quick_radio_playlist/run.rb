@@ -2,7 +2,10 @@
 require 'xmlsimple'
 
 module QuickRadioPlaylist
-  KEYS = %w[ title artist ]
+  NON_XML_KEYS = %w[ current_time ]
+      XML_KEYS = %w[ artist len title ]
+
+  KEYS = NON_XML_KEYS + XML_KEYS
 
   module Run
     extend self
@@ -27,15 +30,22 @@ module QuickRadioPlaylist
     attr_reader :values
 
     def initialize
-      values_from_xml_get unless defined? @@values
-      @values = @@values
+      non_xml_values_get
+      xml_values_get unless defined? @@xml_values
+      @values = @@non_xml_values + @@xml_values
     end
 
     protected
 
-    def values_from_xml_get
-      relevant_hash = xml_tree['Events'].first['SS32Event'].first
-      @@values = KEYS.map{|k| relevant_hash[k].first.strip}
+    def non_xml_values_get
+      @@non_xml_values = NON_XML_KEYS.map do |k|
+        case k
+        when 'current_time'
+          Time.now.localtime.round.strftime '%-l:%M %p'
+        else
+          "(Error: key '#{k}' unknown)"
+        end
+      end
     end
 
     def xml_tree
@@ -44,6 +54,11 @@ module QuickRadioPlaylist
 #     puts result
 #     print result.to_yaml
       result
+    end
+
+    def xml_values_get
+      relevant_hash = xml_tree['Events'].first['SS32Event'].first
+      @@xml_values = XML_KEYS.map{|k| relevant_hash[k].first.strip}
     end
   end
 
