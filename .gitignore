@@ -1,0 +1,100 @@
+## Don't put *.swp, *.bak, etc here; those belong in a global ~/.gitignore.
+## Check out https://help.github.com/articles/ignoring-files for how to set that up.
+
+## Keep each group alphabetized.
+
+### Bundler:
+##     /lib/bundler/man/
+###    /vendor/bundle/  -- Ignore this: we're not using `--path`.
+###    /vendor/cache/  -- Ignore this: we're not using `--path`.
+##     /vendor/ruby/  -- Ignore this: we're not using `--path`.
+
+### Bundler per-app, per-machine configuration. Ignore it, says:
+###     http://stackoverflow.com/a/6963708
+##     /.bundle/
+
+### Code coverage output:
+##     /coverage/
+
+### Compiled Ruby files:
+##     *.rbc
+
+### Gem packaging:
+##     *.gem
+##     /pkg/
+
+### Generated documentation:
+##     /.yardoc
+##     /_yardoc/
+##     /doc/
+##     /rdoc/
+
+### Heroku, Foreman, the dotenv library, etc., use this file to load environment variables:
+##     /.env
+
+### Our own files:
+##     !*.rb
+##     !.gitkeep
+##     !example-*
+##     .setup-done
+##     /etc/
+##     /out/
+##     /vendor/
+
+### (Ruby) setup.rb:
+##    /InstalledFiles/
+
+### RVM (Ruby version manager):
+##     /.rvmrc  -- this project is for Windows, so doesn't use RVM.
+
+### Temporary files:
+##     /test/tmp/
+##     /tmp/
+
+### Test reports:
+##     /spec/reports/
+
+### Varying files:
+##     /log/
+##     /var/
+
+# Basename blobs in any directory:
+*.gem
+*.rbc
+
+# Basenames in any directory:
+
+# Single files:
+/.env
+/.rvmrc
+/.yardoc
+.setup-done
+
+# Single trees:
+/.bundle/
+/_yardoc/
+/coverage/
+/doc/
+/etc/
+/InstalledFiles/
+/lib/bundler/man/
+/log/
+/out/
+/pkg/
+/rdoc/
+/spec/reports/
+/test/log/
+/test/tmp/
+/test/var/
+/tmp/
+/var/
+/vendor/
+
+# Pattern cancellation blobs (don't move this):
+!*.rb
+!example-*
+
+# Pattern cancellation single files (don't move this):
+!.gitkeep
+
+# Single trees overriding all pattern cancellations (don't move this):
