@@ -26,7 +26,7 @@ module QuickRadioPlaylist
       same ? 'same' : nil
     end
 
-    def create_output(substitutions, input_template_file='var/template_sample.html', output_file='var/output.html')
+    def create_output(substitutions, input_template_file, output_file)
       File.open input_template_file, 'r' do |f_template|
         lines = f_template.readlines
         File.open output_file, 'w' do |f_out|
@@ -35,7 +35,7 @@ module QuickRadioPlaylist
       end
     end
 
-    def last_five_songs_get(times, artists, titles)
+    def latest_five_songs_get(times, artists, titles)
       songs_to_keep = 5
       song_count = titles.length
       songs_to_drop = song_count <= songs_to_keep ? 0 : song_count - songs_to_keep
@@ -48,7 +48,6 @@ module QuickRadioPlaylist
     def recent_songs_get(currently_playing)
 # 'r+' is "Read-write, starts at beginning of file", per:
 # http://www.ruby-doc.org/core-2.0.0/IO.html#method-c-new
-
       n = Time.now
       year_month_day = Time.new(n.year, n.month, n.day).strftime '%4Y %2m %2d'
 
@@ -81,17 +80,17 @@ module QuickRadioPlaylist
     end
 
     def run
-      song_currently_playing = Snapshot.new.values
-      now_playing = SubstitutionsNowPlaying.new song_currently_playing
-      create_output now_playing
+      now_playing = Snapshot.new.values
+      substitutions_now_playing = SubstitutionsNowPlaying.new now_playing
+      create_output substitutions_now_playing, 'var/now_playing.mustache', 'var/now_playing.html'
 
-      unless 'same' == (compare_recent song_currently_playing)
-        times, artists, titles = recent_songs_get song_currently_playing
-        five_songs = last_five_songs_get times, artists, titles
-#print 'five_songs='; p five_songs
-        five = SubstitutionsLatestFive.new five_songs
-#print 'five='; p five
-        create_output five, 'var/latest_five_template.html', 'var/latest_five.html'
+      unless 'same' == (compare_recent now_playing)
+        times, artists, titles = recent_songs_get now_playing
+        latest_five = latest_five_songs_get times, artists, titles
+#print 'latest_five='; p latest_five
+        substitutions_latest_five = SubstitutionsLatestFive.new latest_five
+#print 'substitutions_latest_five='; p substitutions_latest_five
+        create_output substitutions_latest_five, 'var/latest_five.mustache', 'var/latest_five.html'
       end
     end
   end
@@ -120,7 +119,7 @@ module QuickRadioPlaylist
 
     def xml_tree
 # See http://xml-simple.rubyforge.org/
-      result = XmlSimple.xml_in 'var/input.xml', { KeyAttr: 'name' }
+      result = XmlSimple.xml_in 'var/now_playing.xml', { KeyAttr: 'name' }
 #     puts result
 #     print result.to_yaml
       result
@@ -149,9 +148,9 @@ module QuickRadioPlaylist
 
   class SubstitutionsLatestFive < Substitutions
     def initialize(current_values)
-      key_types = %w[ time artist title ]
+      key_types = %w[ start_time artist title ]
       count = 5
-      fields = (1..count).map(&:to_s).product(key_types).map{|digit,key| "[#{key}#{digit} here]"}
+      fields = (1..count).map(&:to_s).product(key_types).map{|digit,key| "{{#{key}#{digit}}}"}
 #print 'fields='; p fields
       super fields, current_values
     end
@@ -159,7 +158,7 @@ module QuickRadioPlaylist
 
   class SubstitutionsNowPlaying < Substitutions
     def initialize(current_values)
-      fields = KEYS.map{|e| "[#{e} here]"}
+      fields = KEYS.map{|e| "{{#{e}}}"}
       super fields, current_values
     end
   end
