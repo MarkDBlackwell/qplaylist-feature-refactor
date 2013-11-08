@@ -1,5 +1,5 @@
 # coding: utf-8
-require 'cgi'
+require 'mustache'
 require 'xmlsimple'
 
 module QuickRadioPlaylist
@@ -13,7 +13,7 @@ module QuickRadioPlaylist
 
     def compare_recent(currently_playing)
       remembered, artist_title, same = nil, nil, nil # Define in scope.
-      File.open 'var/current_song.txt', 'r+' do |f_current_song|
+      File.open 'var/current_song.txt', 'r+b' do |f_current_song|
         remembered = f_current_song.readlines.map(&:chomp)
         artist_title = currently_playing.drop 1
         same = remembered == artist_title
@@ -27,11 +27,34 @@ module QuickRadioPlaylist
     end
 
     def create_output(substitutions, input_template_file, output_file)
-      File.open input_template_file, 'r' do |f_template|
+      File.open input_template_file, 'rb' do |f_template|
         lines = f_template.readlines
-        File.open output_file, 'w' do |f_out|
+        File.open output_file, 'wb' do |f_out|
           lines.each{|e| f_out.print substitutions.run e}
         end
+      end
+    end
+
+    def create_output_recent_songs(dates, times, artists, titles)
+      songs = dates.zip(times,artists,titles).map do |date,time,artist,title|
+        year, month, day = date.split ' '
+        clock, meridian = time.split ' '
+        hour, minute = clock.split ':'
+        {
+          artist:   artist,
+          title:    title,
+          time:     time,
+          year:     year,
+          month:    month,
+          day:      day,
+          hour:     hour,
+          minute:   minute,
+          meridian: meridian, # 'AM' or 'PM'.
+        }
+      end
+      Songs.template_file = 'var/recent_songs.mustache'
+      File.open 'var/recent_songs.html', 'wb' do |f_output|
+        f_output.print Songs.new(songs.reverse).render
       end
     end
 
@@ -39,44 +62,63 @@ module QuickRadioPlaylist
       songs_to_keep = 5
       song_count = titles.length
       songs_to_drop = song_count <= songs_to_keep ? 0 : song_count - songs_to_keep
-      [ (times.  drop songs_to_drop),
+      [
+        (times.  drop songs_to_drop),
         (artists.drop songs_to_drop),
-        (titles. drop songs_to_drop) ].transpose.reverse.
+        (titles. drop songs_to_drop),
+      ].transpose.reverse.
           fill(['','',''], song_count...songs_to_keep).flatten
     end
 
     def recent_songs_get(currently_playing)
 # 'r+' is "Read-write, starts at beginning of file", per:
 # http://www.ruby-doc.org/core-2.0.0/IO.html#method-c-new
-      n = Time.now
+      n = Time.now.localtime.round
       year_month_day = Time.new(n.year, n.month, n.day).strftime '%4Y %2m %2d'
-
-      times, artists, titles = nil, nil, nil # Define in scope.
-      File.open 'var/recent_songs.txt', 'r+' do |f_recent_songs|
-        times, artists, titles = recent_songs_read f_recent_songs
+      dates, times, artists, titles = nil, nil, nil, nil # Define in scope.
+      File.open 'var/recent_songs.txt', 'r+b' do |f_recent_songs|
+        dates, times, artists, titles = recent_songs_read f_recent_songs
 # Push current song:
+        dates.push          year_month_day
+        f_recent_songs.puts year_month_day
         times.  push currently_playing.at 0
         artists.push currently_playing.at 1
         titles. push currently_playing.at 2
-        f_recent_songs.puts year_month_day
         currently_playing.each{|e| f_recent_songs.print "#{e}\n"}
       end
-      [times, artists, titles]
+      [dates, times, artists, titles]
     end
 
     def recent_songs_read(f_recent_songs)
-      times, artists, titles = [], [], []
+      dates, times, artists, titles = [], [], [], []
       lines_per_song = 4
       a = f_recent_songs.readlines.map(&:chomp)
       song_count = a.length.div lines_per_song
       (0...song_count).each do |i|
-# For now, ignore date, which is at:
-#                         i * lines_per_song + 0
+        dates.  push a.at i * lines_per_song + 0
         times.  push a.at i * lines_per_song + 1
         artists.push a.at i * lines_per_song + 2
         titles. push a.at i * lines_per_song + 3
       end
-      [times, artists, titles]
+      [dates, times, artists, titles]
+    end
+
+    def recent_songs_reduce(year_month_day, old_dates, old_times, old_artists, old_titles)
+      comparison_date = year_month_day - 60 * 60 * 24 * 2 # Day before yesterday.
+      big_array = []
+      (0...old_dates.length).each do |i|
+        year, month, day = old_dates.at(i).split(' ').map(&:to_i)
+        song_time = Time.new year, month, day
+        unless song_time < comparison_date
+          big_array.push old_dates.  at i
+          big_array.push old_times.  at i
+          big_array.push old_artists.at i
+          big_array.push old_titles. at i
+        end
+      end
+      File.open 'var/recent_songs.txt', 'wb' do |f_recent_songs|
+        big_array.each{|e| f_recent_songs.print "#{e}\n"}
+      end
     end
 
     def run
@@ -85,12 +127,24 @@ module QuickRadioPlaylist
       create_output substitutions_now_playing, 'var/now_playing.mustache', 'var/now_playing.html'
 
       unless 'same' == (compare_recent now_playing)
-        times, artists, titles = recent_songs_get now_playing
+        dates, times, artists, titles = recent_songs_get now_playing
         latest_five = latest_five_songs_get times, artists, titles
 #print 'latest_five='; p latest_five
         substitutions_latest_five = SubstitutionsLatestFive.new latest_five
 #print 'substitutions_latest_five='; p substitutions_latest_five
         create_output substitutions_latest_five, 'var/latest_five.mustache', 'var/latest_five.html'
+        create_output_recent_songs dates, times, artists, titles
+        n = Time.now.localtime.round
+        year_month_day_hour_string = Time.new(n.year, n.month, n.day, n.hour).strftime '%4Y %2m %2d %2H'
+        year_month_day             = Time.new n.year, n.month, n.day
+        File.open 'var/current_hour.txt', 'r+b' do |f_current_hour|
+          unless f_current_hour.readlines.push('').first.chomp == year_month_day_hour_string
+            recent_songs_reduce year_month_day, dates, times, artists, titles
+            f_current_hour.rewind
+            f_current_hour.truncate 0
+            f_current_hour.print "#{year_month_day_hour_string}\n"
+          end
+        end
       end
     end
   end
@@ -127,7 +181,18 @@ module QuickRadioPlaylist
 
     def xml_values_get
       relevant_hash = xml_tree['Events'].first['SS32Event'].first
-      @@xml_values = XML_KEYS.map{|k| relevant_hash[k].first.strip}
+      @@xml_values = XML_KEYS.map(&:capitalize).map{|k| relevant_hash[k].first.strip}
+    end
+  end
+
+  class Songs < Mustache
+    def initialize(a)
+      @array_of_hashed_songs = a
+      super()
+    end
+
+    def songs
+      @array_of_hashed_songs
     end
   end
 
