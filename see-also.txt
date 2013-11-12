@@ -1,0 +1,8 @@
+## See also:
+## http://direnv.net/
+## http://railsapps.github.io/rails-environment-variables.html
+## http://ryan.mcgeary.org/2011/02/09/vendor-everything-still-applies/
+## http://bundler.io/v1.3/man/bundle-install.1.html
+## http://bundler.io/v1.3/man/bundle-install.1.html#REMEMBERED-OPTIONS
+## http://bundler.io/v1.3/gemfile_ruby.html
+## https://en.wikipedia.org/w/index.php?title=Playlist&oldid=715917674#In_radio
