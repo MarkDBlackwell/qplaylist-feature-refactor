@@ -1,0 +1,11 @@
+open {Your website's domain name}
+{Your website's FTP username}
+{Your website's FTP password}
+cd {Some such directory as '/radio/'}
+put C:\QPlaylist\var\now_playing.html    NowPlaying.html
+put C:\QPlaylist\var\latest_five.html    LatestFive.html
+put C:\QPlaylist\var\recent_songs.html   RecentSongs.html
+cd {Some such directory as '/player/'}
+put C:\QPlaylist\var\latest_five.html    LatestFive.html
+disconnect
+quit

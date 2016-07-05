@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="NowPlaying.xsl"?>
+<NowPlaying>
+<Call>WTMD-FM</Call>
+<Events>
+<SS32Event pos="0" valid="true">
+
+<Artist><![CDATA[Micachu and The Shapes      ]]></Artist>
+<CatId>MUS</CatId>
+<CutId>05CM</CutId>
+<Intro>00</Intro>
+<Len>01:18</Len>
+<Raw><![CDATA[MUS05CMSONG  Lips                        Micachu and The Shapes      P00 01:18]]></Raw>
+<SecondsRemaining>  </SecondsRemaining>
+<Title><![CDATA[Lips                        ]]></Title>
+<Type>SONG</Type>
+
+</SS32Event>
+</Events>
+</NowPlaying>
