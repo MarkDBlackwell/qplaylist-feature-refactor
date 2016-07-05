@@ -1,0 +1,48 @@
+<html>
+<head>
+<!-- <meta http-equiv="refresh" content="120"> -->
+<style type="text/css">
+html, body {
+font-family: arial, helvetica, sans-serif;
+font-size:16px;
+line-height:1.5;
+background-color:#efefef;
+}
+
+.small {
+font-size:13px;
+}
+
+div.song{
+border-bottom:3px solid #aaaaaa;
+}
+
+div.song p {
+margin-bottom:0;
+}
+
+a {
+color:000000;
+font-weight:bold;
+text-decoration:none;
+}
+</style>
+</head>
+
+{{#songs}}
+<div class="song">
+  <p><span class="small">{{month}}/{{day}} {{hour}}:{{minute}} {{meridian}}</span>
+        &nbsp; - &nbsp;
+     <span class="small">Title:</span>
+     {{title}}
+        &nbsp; - &nbsp;
+     <span class="small">Artist:</span>
+     {{artist}}
+        &nbsp; &nbsp;
+     <span class="small"><a target="_blank"
+href="http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Ddigital-music&field-keywords={{title}}+{{artist}}&tag=wt897fmrafomu-20"
+     >Buy Song</a> </span>
+  </p>
+</div>
+{{/songs}}
+</html>
