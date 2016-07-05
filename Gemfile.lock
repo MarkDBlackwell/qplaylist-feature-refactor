@@ -1,0 +1,50 @@
+PATH
+  remote: .
+  specs:
+    quick-radio-playlist (1.0.0-x64-mingw32)
+      bundler (= 1.12.5)
+      ffi (= 1.9.10)
+      inifile (= 3.0.0)
+      little-plugger (= 1.1.4)
+      logging (= 2.1.0)
+      minitest (= 5.9.0)
+      minitest-stub-const (= 0.5)
+      multi_json (= 1.12.1)
+      mustache (= 1.0.3)
+      os (= 0.9.6)
+      rake (= 11.1.2)
+      win32-service (= 0.8.7)
+      xml-simple (= 1.1.5)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ffi (1.9.10-x64-mingw32)
+    inifile (3.0.0)
+    little-plugger (1.1.4)
+    logging (2.1.0)
+      little-plugger (~> 1.1)
+      multi_json (~> 1.10)
+    minitest (5.9.0)
+    minitest-stub-const (0.5)
+    multi_json (1.12.1)
+    mustache (1.0.3)
+    os (0.9.6)
+    rake (11.1.2)
+    win32-service (0.8.7)
+      ffi
+    xml-simple (1.1.5)
+    yard (0.8.7.6)
+
+PLATFORMS
+  x64-mingw32
+
+DEPENDENCIES
+  quick-radio-playlist!
+  yard (= 0.8.7.6)
+
+RUBY VERSION
+   ruby 2.2.4p230
+
+BUNDLED WITH
+   1.12.5
